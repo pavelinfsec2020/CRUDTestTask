@@ -2,6 +2,7 @@ using CRUDTestTask.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using CRUDTestTask.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace CRUDTestTask
 {
@@ -16,8 +17,11 @@ namespace CRUDTestTask
             var builder = Host.CreateDefaultBuilder(args)
                               .ConfigureServices((context, services) =>
         {
-          var configuration = context.Configuration;
-          var dataProvider = configuration["DataProvider"];
+          var configuration  = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .Build();
+            var dataProvider = configuration["DataProvider"];
 
           switch (dataProvider)
           {
@@ -28,8 +32,9 @@ namespace CRUDTestTask
                   services.AddSingleton<IUserRepository, XmlUserRepository>(sp => new XmlUserRepository("users.xml"));
                   break;
               default:
-                  throw new InvalidOperationException("Не указан тип источника данных!");
-          }
+                    services.AddSingleton<IUserRepository, RuntimeMemoryUserRepository>();
+                    break;
+            }
 
           services.AddSingleton<UserService>();
           services.AddSingleton<CrudViewerForm>();
