@@ -1,4 +1,3 @@
-
 public interface IUserRepository
 {
     IEnumerable<User> GetAll();
